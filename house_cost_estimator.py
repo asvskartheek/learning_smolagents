@@ -1,3 +1,4 @@
+model_id="Qwen/QwQ-32B"
 from smolagents import (
     CodeAgent,
     HfApiModel,
@@ -5,8 +6,10 @@ from smolagents import (
     VisitWebpageTool,
     PythonInterpreterTool,
     FinalAnswerTool,
+    LiteLLMModel
 )
 from huggingface_hub import login, HfFolder
+import os
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -21,7 +24,8 @@ Estimate the cost of building a 2,000 square foot house based on these material 
 Include labor and other costs in the estimate (consider 2.25x the material cost for labor).
 Provide a detailed cost breakdown and generate a visualization of the results.
 """
-model = HfApiModel()
+model = HfApiModel(model_id)
+# model = LiteLLMModel("openrouter/qwen/qwq-32b:free", api_key=os.environ["OPENROUTER_API_KEY"])
 agent = CodeAgent(
     tools=[
         GoogleSearchTool(),

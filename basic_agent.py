@@ -1,8 +1,10 @@
-from smolagents import CodeAgent, HfApiModel
+from smolagents import CodeAgent, HfApiModel, LiteLLMModel
 from dotenv import load_dotenv
 load_dotenv()
+import os
 
-model = HfApiModel()
+# model = HfApiModel()
+model = LiteLLMModel("openrouter/deepseek/deepseek-r1-distill-qwen-14b:free", api_key=os.environ["OPENROUTER_API_KEY"])
 
 agent = CodeAgent(
     tools=[],model=model, add_base_tools=True
