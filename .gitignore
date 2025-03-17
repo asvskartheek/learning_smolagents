@@ -48,3 +48,6 @@ htmlcov/
 # Local development
 .env
 .env.local
+
+# photos
+photos/
