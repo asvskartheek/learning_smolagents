@@ -28,3 +28,8 @@ model = LiteLLMModel(
     temperature=0.2,
     api_key=os.environ["GEMINI_API_KEY"]
 )
+
+# Hf Api model
+from smolagents import HfApiModel
+model_id = "meta-llama/Llama-3.3-70B-Instruct"
+model = HfApiModel(model_id=model_id)
