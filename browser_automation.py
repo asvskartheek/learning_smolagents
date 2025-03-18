@@ -1,7 +1,4 @@
-# TODO: Not working! Getting the error: Error in generating model output:
-# 422 Client Error: Unprocessable Entity for url: https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.3-70B-Instruct/v1/chat/completions
-# Input validation error: `inputs` tokens + `max_new_tokens` must be <= 131072. Given: 378916 `inputs` tokens and 0 `max_new_tokens`
-# {"error":"Input validation error: `inputs` tokens + `max_new_tokens` must be <= 131072. Given: 378916 `inputs` tokens and 0 `max_new_tokens`","error_type":"validation"}
+# Finally fucking works! With Gemini-2.0-Flash model.
 from io import BytesIO
 from time import sleep
 
@@ -17,6 +14,17 @@ from smolagents.agents import ActionStep
 
 # Load environment variables
 load_dotenv()
+
+# Model - Gemini
+from smolagents import LiteLLMModel
+from dotenv import load_dotenv
+load_dotenv()
+import os
+model = LiteLLMModel(
+    model_id="gemini/gemini-2.0-flash", 
+    temperature=0.2,
+    api_key=os.environ["GEMINI_API_KEY"]
+)
 
 # Configure Chrome options
 chrome_options = webdriver.ChromeOptions()
@@ -58,6 +66,27 @@ def close_popups() -> str:
     """
     webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
 
+@tool
+def click(element: str) -> None:
+    """
+    Clicks on the element with the given text.
+    Args:
+        element: The text of the element to click.
+    """
+    driver.find_element(By.XPATH, f"//*[contains(text(), '{element}')]").click()
+
+@tool
+def right_click(element: str) -> None:
+    """
+    Right clicks on the element with the given text. Use right click on an image, to download it.
+    Args:
+        element: The text of the element to click.
+    NOTE: TOOL IS WORK IN PROGRESS, CODE IS CORRECT BUT WE CANNOT USE TEXT FOR RIGHT CLICKING ON IMAGES.
+    """
+    from selenium.webdriver.common.action_chains import ActionChains
+    element = driver.find_element(By.XPATH, f"//*[contains(text(), '{element}')]")
+    ActionChains(driver).context_click(element).perform()
+
 # Set up screenshot callback
 def save_screenshot(memory_step: ActionStep, agent: CodeAgent) -> None:
     sleep(1.0)  # Let JavaScript animations happen before taking the screenshot
@@ -78,11 +107,23 @@ def save_screenshot(memory_step: ActionStep, agent: CodeAgent) -> None:
         url_info if memory_step.observations is None else memory_step.observations + "\n" + url_info
     )
 
-from smolagents import HfApiModel
+# Download the image
+@tool
+def download_image(url: str, filename: str) -> None:
+    """
+    Given a URL of an image on the internet, download it, convert it to standard jpeg format, then saves to the local file system.
 
-# Initialize the model
-model_id = "meta-llama/Llama-3.3-70B-Instruct"  # You can change this to your preferred model
-model = HfApiModel(model_id=model_id)
+    Args:
+        url: The URL of the image to download.
+        filename: The name of the file to save the image to.
+    """
+    import requests
+    from PIL import Image
+    from io import BytesIO
+
+    response = requests.get(url)
+    img = Image.open(BytesIO(response.content))
+    img.save("photos/"+filename, "jpeg")
 
 # Create the agent
 agent = CodeAgent(
@@ -95,7 +136,7 @@ agent = CodeAgent(
 )
 
 # Import helium for the agent
-agent.python_executor("from helium import *", agent.state)
+agent.python_executor("from helium import *")
 
 helium_instructions = """
 You can use helium to access websites. Don't bother about the helium driver, it's already managed.
@@ -140,6 +181,9 @@ if Text('Accept cookies?').exists():
 search_request = """
 Please navigate to https://en.wikipedia.org/wiki/Chicago and give me a sentence containing the word "1992" that mentions a construction accident.
 """
+# search_request = """
+# Navigate to https://google.com run a search on the recent protests against Waqf ammendment bill in India by AIMPLB. Navigate to one of the search results and download an image of the protest.
+# """
 
 agent_output = agent.run(search_request + helium_instructions)
 print("Final output:")
