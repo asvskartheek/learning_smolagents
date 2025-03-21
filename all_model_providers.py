@@ -10,8 +10,9 @@ model = OpenAIServerModel(
 # Claude
 from smolagents import LiteLLMModel
 from dotenv import load_dotenv
-load_dotenv()
 import os
+
+load_dotenv()
 model = LiteLLMModel(
     model_id="anthropic/claude-3-5-sonnet-20241022",
     temperature=0.2,
@@ -21,8 +22,9 @@ model = LiteLLMModel(
 # Gemini
 from smolagents import LiteLLMModel
 from dotenv import load_dotenv
-load_dotenv()
 import os
+
+load_dotenv()
 model = LiteLLMModel(
     model_id="gemini/gemini-2.0-flash", 
     temperature=0.2,
@@ -33,3 +35,14 @@ model = LiteLLMModel(
 from smolagents import HfApiModel
 model_id = "meta-llama/Llama-3.3-70B-Instruct"
 model = HfApiModel(model_id=model_id)
+
+# OpenRouter
+from smolagents import LiteLLMModel
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+model = LiteLLMModel(
+    model_id="openrouter/qwen/qwq-32b:free",
+    api_key=os.environ["OPENROUTER_API_KEY"]
+)
