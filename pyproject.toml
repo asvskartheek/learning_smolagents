@@ -1,0 +1,11 @@
+[project]
+name = "test-smolagents"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai>=1.8.0",
+    "smolagents[mcp]>=1.12.0",
+    "undetected-chromedriver>=3.5.5",
+]
