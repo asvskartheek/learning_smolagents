@@ -1,9 +1,8 @@
 from dotenv import load_dotenv
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 import helium
 from helium import *
-from smolagents import CodeAgent, tool, ActionStep
+from smolagents import CodeAgent, ActionStep
 from time import sleep
 from io import BytesIO
 from PIL import Image
@@ -15,13 +14,15 @@ load_dotenv()
 # Model - Gemini
 from smolagents import LiteLLMModel
 from dotenv import load_dotenv
+
 load_dotenv()
 import os
+
 model = LiteLLMModel(
-    model_id="gemini/gemini-2.0-flash", 
+    model_id="gemini/gemini-2.0-flash",
     # model_id="gemini/gemini-2.5-pro-exp-03-25",
     temperature=0.2,
-    api_key=os.environ["GEMINI_API_KEY"]
+    api_key=os.environ["GEMINI_API_KEY"],
 )
 
 # Configure Chrome options
@@ -41,47 +42,43 @@ chrome_options.add_argument("--window-position=0,0")
 driver = uc.Chrome(options=chrome_options)
 set_driver(driver)
 
+
 def save_screenshot(memory_step: ActionStep, agent: CodeAgent) -> None:
     sleep(1.0)  # Let JavaScript animations happen before taking the screenshot
     driver = helium.get_driver()
     current_step = memory_step.step_number
     if driver is not None:
-        for previous_memory_step in agent.memory.steps:  # Remove previous screenshots for lean processing
-            if isinstance(previous_memory_step, ActionStep) and previous_memory_step.step_number <= current_step - 2:
+        for (
+            previous_memory_step
+        ) in agent.memory.steps:  # Remove previous screenshots for lean processing
+            if (
+                isinstance(previous_memory_step, ActionStep)
+                and previous_memory_step.step_number <= current_step - 2
+            ):
                 previous_memory_step.observations_images = None
         png_bytes = driver.get_screenshot_as_png()
         image = Image.open(BytesIO(png_bytes))
         print(f"Captured a browser screenshot: {image.size} pixels")
-        memory_step.observations_images = [image.copy()]  # Create a copy to ensure it persists
+        memory_step.observations_images = [
+            image.copy()
+        ]  # Create a copy to ensure it persists
 
     # Update observations with current URL
     url_info = f"Current url: {driver.current_url}"
     memory_step.observations = (
-        url_info if memory_step.observations is None else memory_step.observations + "\n" + url_info
+        url_info
+        if memory_step.observations is None
+        else memory_step.observations + "\n" + url_info
     )
 
-@tool
-def click(element: str) -> None:
-    """
-    Clicks on the element with the given text.
-    Args:
-        element: The text of the element to click.
-    """
-    driver.find_element(By.XPATH, f"//*[contains(text(), '{element}')]").click()
-
-@tool
-def get_page_source() -> None:
-    """
-    Get the current page's full HTML code, useful for getting the exact elements to interact with.
-    """
-    return driver.page_source
 
 from smolagents import Tool
+
 
 class HumanInterventionTool(Tool):
     """
     A universal human-in-the-loop tool.
-    
+
     scenario="clarification":
         Ask an open-ended question and return user’s text.
     scenario="approval":
@@ -89,6 +86,7 @@ class HumanInterventionTool(Tool):
     scenario="multiple_choice":
         Present a list of options and return the chosen index (or text).
     """
+
     name = "human_intervention"
     description = (
         "A single human tool for clarifications, approvals, and multiple-choice decisions. "
@@ -97,23 +95,27 @@ class HumanInterventionTool(Tool):
     inputs = {
         "scenario": {
             "type": "string",
-            "description": "One of: 'clarification', 'approval', 'multiple_choice'."
+            "description": "One of: 'clarification', 'approval', 'multiple_choice'.",
         },
         "message_for_human": {
             "type": "string",
-            "description": "Display text or question for the user."
+            "description": "Display text or question for the user.",
         },
         "choices": {
             "type": "array",
             "description": "If scenario='multiple_choice', list of option strings. Otherwise can be empty.",
-            "nullable": True
-        }
+            "nullable": True,
+        },
     }
     output_type = "string"
 
-    def forward(self, scenario: str, message_for_human: str, choices: list = None) -> str:
+    def forward(
+        self, scenario: str, message_for_human: str, choices: list = None
+    ) -> str:
         if scenario not in ["clarification", "approval", "multiple_choice"]:
-            raise ValueError("Must be 'clarification', 'approval', or 'multiple_choice'.")
+            raise ValueError(
+                "Must be 'clarification', 'approval', or 'multiple_choice'."
+            )
 
         print("\n[HUMAN INTERVENTION]")
         print(f"Scenario: {scenario}")
@@ -136,6 +138,7 @@ class HumanInterventionTool(Tool):
                 print(f"{i}. {choice}")
             user_input = input("\nEnter the number of your chosen option: ")
             return user_input
+
 
 agent = CodeAgent(
     tools=[HumanInterventionTool()],
