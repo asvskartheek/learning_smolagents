@@ -1,4 +1,4 @@
-model_id="Qwen/QwQ-32B"
+model_id = "Qwen/QwQ-32B"
 from smolagents import (
     CodeAgent,
     HfApiModel,
@@ -6,12 +6,13 @@ from smolagents import (
     VisitWebpageTool,
     PythonInterpreterTool,
     FinalAnswerTool,
-    LiteLLMModel
+    LiteLLMModel,
 )
 from huggingface_hub import login, HfFolder
 import os
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Only login if not already authenticated

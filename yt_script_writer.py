@@ -1,13 +1,15 @@
 # Model - Gemini
 from smolagents import LiteLLMModel
 from dotenv import load_dotenv
+
 load_dotenv()
 import os
+
 model = LiteLLMModel(
-    model_id="gemini/gemini-2.0-flash", 
+    model_id="gemini/gemini-2.0-flash",
     # model_id="gemini/gemini-2.5-pro-exp-03-25",
     temperature=0.2,
-    api_key=os.environ["GEMINI_API_KEY"]
+    api_key=os.environ["GEMINI_API_KEY"],
 )
 
 # AzureOpenAI
@@ -17,18 +19,27 @@ import os
 
 load_dotenv()
 model = AzureOpenAIServerModel(
-    model_id = os.environ.get("AZURE_DEPLOYMENT"),
+    model_id=os.environ.get("AZURE_DEPLOYMENT"),
     azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
     api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
-    api_version=os.environ.get("AZURE_OPENAI_API_VERSION")    
+    api_version=os.environ.get("AZURE_OPENAI_API_VERSION"),
 )
 
 # Agent
-from smolagents import CodeAgent, GoogleSearchTool, VisitWebpageTool, Tool, tool, GradioUI
+from smolagents import (
+    CodeAgent,
+    GoogleSearchTool,
+    VisitWebpageTool,
+    Tool,
+    tool,
+    GradioUI,
+)
+
+
 class HumanInterventionTool(Tool):
     """
     A universal human-in-the-loop tool.
-    
+
     scenario="clarification":
         Ask an open-ended question and return user’s text.
     scenario="approval":
@@ -36,6 +47,7 @@ class HumanInterventionTool(Tool):
     scenario="multiple_choice":
         Present a list of options and return the chosen index (or text).
     """
+
     name = "human_intervention"
     description = (
         "A single human tool for clarifications, approvals, and multiple-choice decisions. "
@@ -44,23 +56,27 @@ class HumanInterventionTool(Tool):
     inputs = {
         "scenario": {
             "type": "string",
-            "description": "One of: 'clarification', 'approval', 'multiple_choice'."
+            "description": "One of: 'clarification', 'approval', 'multiple_choice'.",
         },
         "message_for_human": {
             "type": "string",
-            "description": "Display text or question for the user."
+            "description": "Display text or question for the user.",
         },
         "choices": {
             "type": "array",
             "description": "If scenario='multiple_choice', list of option strings. Otherwise can be empty.",
-            "nullable": True
-        }
+            "nullable": True,
+        },
     }
     output_type = "string"
 
-    def forward(self, scenario: str, message_for_human: str, choices: list = None) -> str:
+    def forward(
+        self, scenario: str, message_for_human: str, choices: list = None
+    ) -> str:
         if scenario not in ["clarification", "approval", "multiple_choice"]:
-            raise ValueError("Must be 'clarification', 'approval', or 'multiple_choice'.")
+            raise ValueError(
+                "Must be 'clarification', 'approval', or 'multiple_choice'."
+            )
 
         print("\n[HUMAN INTERVENTION]")
         print(f"Scenario: {scenario}")
@@ -84,6 +100,7 @@ class HumanInterventionTool(Tool):
             user_input = input("\nEnter the number of your chosen option: ")
             return user_input
 
+
 @tool
 def read_code(file_path: os.PathLike) -> str:
     """
@@ -91,10 +108,11 @@ def read_code(file_path: os.PathLike) -> str:
     Args:
         file_path: Path to the code file.
     """
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         return file.read()
 
-@tool 
+
+@tool
 def save_script(script: str, file_path: os.PathLike) -> None:
     """
     Saves the generated script to a text file.
@@ -102,11 +120,18 @@ def save_script(script: str, file_path: os.PathLike) -> None:
         script: The script content to save.
         file_path: Path to the output text file.
     """
-    with open(file_path, 'w') as file:
+    with open(file_path, "w") as file:
         file.write(script)
 
+
 agent = CodeAgent(
-    tools=[HumanInterventionTool(), GoogleSearchTool(), VisitWebpageTool(), read_code, save_script],
+    tools=[
+        HumanInterventionTool(),
+        GoogleSearchTool(),
+        VisitWebpageTool(),
+        read_code,
+        save_script,
+    ],
     model=model,
     planning_interval=10,
     max_steps=25,

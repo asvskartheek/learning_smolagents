@@ -18,12 +18,14 @@ load_dotenv()
 # Model - Gemini
 from smolagents import LiteLLMModel
 from dotenv import load_dotenv
+
 load_dotenv()
 import os
+
 model = LiteLLMModel(
-    model_id="gemini/gemini-2.0-flash", 
+    model_id="gemini/gemini-2.0-flash",
     temperature=0.2,
-    api_key=os.environ["GEMINI_API_KEY"]
+    api_key=os.environ["GEMINI_API_KEY"],
 )
 
 # Configure Chrome options
@@ -36,6 +38,7 @@ chrome_options.add_argument("--window-position=0,0")
 # Initialize the browser
 driver = helium.start_chrome(headless=False, options=chrome_options)
 
+
 @tool
 def search_item_ctrl_f(text: str, nth_result: int = 1) -> str:
     """
@@ -46,17 +49,21 @@ def search_item_ctrl_f(text: str, nth_result: int = 1) -> str:
     """
     elements = driver.find_elements(By.XPATH, f"//*[contains(text(), '{text}')]")
     if nth_result > len(elements):
-        raise Exception(f"Match n°{nth_result} not found (only {len(elements)} matches found)")
+        raise Exception(
+            f"Match n°{nth_result} not found (only {len(elements)} matches found)"
+        )
     result = f"Found {len(elements)} matches for '{text}'."
     elem = elements[nth_result - 1]
     driver.execute_script("arguments[0].scrollIntoView(true);", elem)
     result += f"Focused on element {nth_result} of {len(elements)}"
     return result
 
+
 @tool
 def go_back() -> None:
     """Goes back to previous page."""
     driver.back()
+
 
 @tool
 def close_popups() -> str:
@@ -65,6 +72,7 @@ def close_popups() -> str:
     This does not work on cookie consent banners.
     """
     webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+
 
 @tool
 def click(element: str) -> None:
@@ -75,6 +83,7 @@ def click(element: str) -> None:
     """
     driver.find_element(By.XPATH, f"//*[contains(text(), '{element}')]").click()
 
+
 @tool
 def right_click(element: str) -> None:
     """
@@ -84,8 +93,10 @@ def right_click(element: str) -> None:
     NOTE: TOOL IS WORK IN PROGRESS, CODE IS CORRECT BUT WE CANNOT USE TEXT FOR RIGHT CLICKING ON IMAGES.
     """
     from selenium.webdriver.common.action_chains import ActionChains
+
     element = driver.find_element(By.XPATH, f"//*[contains(text(), '{element}')]")
     ActionChains(driver).context_click(element).perform()
+
 
 # Set up screenshot callback
 def save_screenshot(memory_step: ActionStep, agent: CodeAgent) -> None:
@@ -93,19 +104,29 @@ def save_screenshot(memory_step: ActionStep, agent: CodeAgent) -> None:
     driver = helium.get_driver()
     current_step = memory_step.step_number
     if driver is not None:
-        for previous_memory_step in agent.memory.steps:  # Remove previous screenshots for lean processing
-            if isinstance(previous_memory_step, ActionStep) and previous_memory_step.step_number <= current_step - 2:
+        for (
+            previous_memory_step
+        ) in agent.memory.steps:  # Remove previous screenshots for lean processing
+            if (
+                isinstance(previous_memory_step, ActionStep)
+                and previous_memory_step.step_number <= current_step - 2
+            ):
                 previous_memory_step.observations_images = None
         png_bytes = driver.get_screenshot_as_png()
         image = Image.open(BytesIO(png_bytes))
         print(f"Captured a browser screenshot: {image.size} pixels")
-        memory_step.observations_images = [image.copy()]  # Create a copy to ensure it persists
+        memory_step.observations_images = [
+            image.copy()
+        ]  # Create a copy to ensure it persists
 
     # Update observations with current URL
     url_info = f"Current url: {driver.current_url}"
     memory_step.observations = (
-        url_info if memory_step.observations is None else memory_step.observations + "\n" + url_info
+        url_info
+        if memory_step.observations is None
+        else memory_step.observations + "\n" + url_info
     )
+
 
 # Download the image
 @tool
@@ -123,7 +144,8 @@ def download_image(url: str, filename: str) -> None:
 
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
-    img.save("photos/"+filename, "jpeg")
+    img.save("photos/" + filename, "jpeg")
+
 
 # Create the agent
 agent = CodeAgent(

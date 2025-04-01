@@ -41,10 +41,13 @@ for row in rows:
 inspector = inspect(engine)
 columns_info = [(col["name"], col["type"]) for col in inspector.get_columns("receipts")]
 
-table_description = "Columns:\n" + "\n".join([f"  - {name}: {col_type}" for name, col_type in columns_info])
+table_description = "Columns:\n" + "\n".join(
+    [f"  - {name}: {col_type}" for name, col_type in columns_info]
+)
 print(table_description)
 
 from smolagents import tool
+
 
 @tool
 def sql_engine(query: str) -> str:
@@ -73,6 +76,6 @@ from smolagents import CodeAgent, HfApiModel
 
 agent = CodeAgent(
     tools=[sql_engine],
-    model=HfApiModel(), # Qwen/Qwen2.5-Coder-32B-Instruct
+    model=HfApiModel(),  # Qwen/Qwen2.5-Coder-32B-Instruct
 )
 agent.run("Can you give me the name of the client who got the most expensive receipt?")

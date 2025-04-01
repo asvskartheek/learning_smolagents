@@ -3,7 +3,7 @@ from smolagents import (
     HfApiModel,
     GoogleSearchTool,
     VisitWebpageTool,
-    PythonInterpreterTool
+    PythonInterpreterTool,
 )
 from huggingface_hub import login, HfFolder
 

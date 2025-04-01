@@ -1,6 +1,7 @@
 # !pip install smolagents[transformers]
 from smolagents import CodeAgent, OpenAIServerModel, GoogleSearchTool
 from dotenv import load_dotenv
+
 load_dotenv()
 
 model = OpenAIServerModel(
@@ -10,8 +11,6 @@ model = OpenAIServerModel(
     api_key="none",
 )
 
-agent = CodeAgent(
-    tools=[],model=model, add_base_tools=True
-)
+agent = CodeAgent(tools=[], model=model, add_base_tools=True)
 
 agent.run("Who is the CEO of Hugging Face?")
