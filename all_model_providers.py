@@ -53,7 +53,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
 model = AzureOpenAIServerModel(
     model_id = os.environ.get("AZURE_DEPLOYMENT"),
     azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
