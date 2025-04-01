@@ -10,8 +10,21 @@ model = LiteLLMModel(
     api_key=os.environ["GEMINI_API_KEY"]
 )
 
+# AzureOpenAI
+from smolagents import AzureOpenAIServerModel
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+model = AzureOpenAIServerModel(
+    model_id = os.environ.get("AZURE_DEPLOYMENT"),
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+    api_version=os.environ.get("AZURE_OPENAI_API_VERSION")    
+)
+
 # Agent
-from smolagents import CodeAgent, GoogleSearchTool, VisitWebpageTool, Tool, tool
+from smolagents import CodeAgent, GoogleSearchTool, VisitWebpageTool, Tool, tool, GradioUI
 class HumanInterventionTool(Tool):
     """
     A universal human-in-the-loop tool.
@@ -99,6 +112,8 @@ agent = CodeAgent(
     max_steps=25,
     verbosity_level=2,
 )
+
+GradioUI(agent).launch()
 
 agent.run(
     """
