@@ -51,3 +51,6 @@ htmlcov/
 
 # photos
 photos/
+
+# Gradio
+.gradio/
