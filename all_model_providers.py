@@ -46,3 +46,17 @@ model = LiteLLMModel(
     model_id="openrouter/qwen/qwq-32b:free",
     api_key=os.environ["OPENROUTER_API_KEY"]
 )
+
+# AzureOpenAI
+from smolagents import AzureOpenAIServerModel
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+model = AzureOpenAIServerModel(
+    model_id = os.environ.get("AZURE_DEPLOYMENT"),
+    azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.environ.get("AZURE_OPENAI_API_KEY"),
+    api_version=os.environ.get("AZURE_OPENAI_API_VERSION")    
+)
