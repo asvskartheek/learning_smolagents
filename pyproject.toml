@@ -5,12 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "bs4>=0.0.2",
     "datasets>=3.5.0",
     "google-genai>=1.8.0",
     "langfuse>=2.60.2",
+    "markdown>=3.8",
     "openinference-instrumentation-smolagents>=0.1.9",
     "opentelemetry-exporter-otlp>=1.31.1",
     "opentelemetry-sdk>=1.31.1",
+    "python-pptx>=1.0.2",
     "smolagents[gradio,mcp,telemetry]>=1.12.0",
     "undetected-chromedriver>=3.5.5",
 ]
